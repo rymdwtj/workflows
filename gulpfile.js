@@ -4,7 +4,9 @@ var gulp = require('gulp'),
 	concat = require('gulp-concat'),
 	browserify = require('gulp-browserify'),
 	compass = require('gulp-compass'),
-	connect = require('gulp-connect');
+	connect = require('gulp-connect'),
+	gulpif = require('gulp-if'),
+	uglify = require('gulp-uglify');
 
 var env,
 	coffeSources,
@@ -15,15 +17,15 @@ var env,
 	outputDir,
 	sassStyle;
 
-// env = process.env.NODE_ENV || 'development';
+env = process.env.NODE_ENV || 'development';
 
-// if (env==='development'){
+if (env==='development'){
 	outputDir = 'builds/development/';
-// 	sassStyle = 'expanded';
-// }else{
-// 	outputDir = 'builds/production/';
-// 	sassStyle = 'compressed';	
-// }
+	sassStyle = 'expanded';
+}else{
+	outputDir = 'builds/production/';
+	sassStyle = 'compressed';	
+}
 
 coffeeSources = ['components/coffee/tagline.coffee'];
 jsSources = [
@@ -48,6 +50,7 @@ gulp.task('js', function() {
 	gulp.src(jsSources)
 		.pipe(concat('script.js'))
 		.pipe(browserify())
+		.pipe(gulpif(env==='production', uglify()))
 		.pipe(gulp.dest(outputDir + 'js'))
 		.pipe(connect.reload())
 });
@@ -57,7 +60,7 @@ gulp.task('compass', function() {
 		.pipe(compass({
 			sass: 'components/sass',
 			image: outputDir + 'images',
-			style: 'expanded'
+			style: sassStyle
 		})
 			.on('error', gutil.log))
 		.pipe(gulp.dest(outputDir + 'css'))
